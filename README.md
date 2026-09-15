@@ -1,13 +1,10 @@
 <div align="center">
   <h1>DynaSlots</h1>
   <p><strong>Dynamic object-centric 3D representations for scalable robot learning</strong></p>
-
-  <a href="https://arxiv.org/abs/2512.00074"><img src="https://img.shields.io/badge/arXiv-2512.00074-b31b1b" alt="arXiv"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
 </div>
 
 <p align="center">
-  <img src="teaser.png" width="100%" alt="DynaSlots overview">
+  <img src="fig2.png" width="100%" alt="DynaSlots overview">
 </p>
 
 DynaSlots learns temporally consistent object slots from 3D point-cloud
@@ -90,5 +87,5 @@ eval.py        Policy evaluation entry point
 
 ## License
 
-The DynaSlots code is released under the [MIT License](LICENSE). Bundled
-third-party components retain their original licenses.
+The DynaSlots code is released under the MIT License. Bundled third-party
+components retain their original licenses.
