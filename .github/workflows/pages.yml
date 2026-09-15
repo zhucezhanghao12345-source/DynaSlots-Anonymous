@@ -30,8 +30,9 @@ jobs:
           set -e
           mkdir -p _site
           cp index.html .nojekyll README.md INSTALL.md _site/ 2>/dev/null || true
-          cp fig1.png fig2.png fig3.png fig4.png fig5.png fig6.png _site/ 2>/dev/null || true
-          ls -la _site
+          mkdir -p _site/figs
+          cp figs/*.png _site/figs/ 2>/dev/null || true
+          ls -la _site _site/figs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

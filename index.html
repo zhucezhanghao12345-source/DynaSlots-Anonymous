@@ -7,7 +7,7 @@
 <meta name="description" content="DynaSlots decomposes point clouds into temporally consistent slots and models dynamics per slot, learning per-slot latent actions and cross-slot interactions without action, segmentation, or reconstruction labels.">
 <meta property="og:title" content="DynaSlots">
 <meta property="og:description" content="Slot-centric 3D dynamics pretraining for robot manipulation.">
-<meta property="og:image" content="fig1.png">
+<meta property="og:image" content="figs/fig1.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129302;</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,7 +156,7 @@
 
 <div class="container">
   <figure>
-    <img src="fig1.png" alt="Scene-level versus slot-centric 3D dynamics pretraining">
+    <img src="figs/fig1.png" alt="Scene-level versus slot-centric 3D dynamics pretraining">
     <figcaption><b>Scene-level versus slot-centric 3D dynamics pretraining.</b>
       (a) Scene-level modeling compresses the motion of everything into a single global latent action, causing semantic aliasing, implicit interaction dependencies, and distractor sensitivity.
       (b) DynaSlots instead uses temporally aligned soft slots, assigns one latent action to each slot, and models pairwise proximity-and-motion relations across slots.</figcaption>
@@ -223,7 +223,7 @@
     <p class="sec-sub">Point cloud → tokens → temporally consistent slots → per-slot latent actions → cross-slot diffusion dynamics.</p>
 
     <figure>
-      <img src="fig2.png" alt="DynaSlots framework">
+      <img src="figs/fig2.png" alt="DynaSlots framework">
       <figcaption><b>DynaSlots framework.</b> (a) Three point-cloud frames are encoded by a shared Point
         Transformer and propagated by a temporal slot binder into <em>K</em>=6 aligned soft slots. An inverse
         dynamics model (IDM) extracts per-slot latent actions from feature differences; a cross-slot encoder
@@ -313,7 +313,7 @@
       RGB-D camera. 100 expert trajectories per task; five initial layouts × ten trials each.</p>
 
     <figure>
-      <img src="fig4.png" alt="Four real-world manipulation tasks">
+      <img src="figs/fig4.png" alt="Four real-world manipulation tasks">
       <figcaption><b>Four real-world manipulation tasks.</b> (a) putting the milk on the white plate;
         (b) putting the ball on the white plate; (c) placing the ball from the white plate into the bowl;
         (d) putting the chocolate on the plate — covering pick-and-place, destination selection, and
@@ -360,7 +360,7 @@
 
     <div class="two">
       <div>
-        <figure><img src="fig5.png" alt="Robustness to scene clutter"></figure>
+        <figure><img src="figs/fig5.png" alt="Robustness to scene clutter"></figure>
         <div class="tablewrap">
           <table>
             <thead><tr><th>Method</th><th class="num">No clutter</th><th class="num">Cluttered</th><th class="num">Drop</th></tr></thead>
@@ -378,7 +378,7 @@
           the strongest scene-level baseline retains only 58.8%.</p>
       </div>
       <div>
-        <figure><img src="fig6.png" alt="Robustness to unseen objects"></figure>
+        <figure><img src="figs/fig6.png" alt="Robustness to unseen objects"></figure>
         <div class="tablewrap">
           <table>
             <thead><tr><th>Method</th><th class="num">Original</th><th class="num">Unseen</th><th class="num">Drop</th></tr></thead>

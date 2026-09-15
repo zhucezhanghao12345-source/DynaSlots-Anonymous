@@ -1,9 +1,10 @@
 <div align="center">
-  <h1>DynaSlots: Slot-Centric 3D Dynamics Pretraining for Robot Manipulation</h1>
+  <h1>DynaSlots</h1>
+  <p><strong>Dynamic object-centric 3D representations for scalable robot learning</strong></p>
 </div>
 
 <p align="center">
-  <img src="fig2.png" width="100%" alt="DynaSlots overview">
+  <img src="figs/fig2.png" width="100%" alt="DynaSlots overview">
 </p>
 
 DynaSlots learns temporally consistent object slots from 3D point-cloud
