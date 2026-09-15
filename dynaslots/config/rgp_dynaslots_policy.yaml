@@ -1,0 +1,22 @@
+defaults:
+  - dynaslots_policy
+  - _self_
+
+name: train_rgp_dynaslots_policy
+
+training:
+  max_grad_norm: 1.0
+
+policy:
+  condition_type: token_cross_attention_film
+  use_slot_tokens: true
+  persistent_slots: true
+  persistent_memory_train_prob: 0.5
+  persistent_memory_noise_std: 0.05
+  persistent_memory_blend: 0.8
+  persistent_memory_similarity_threshold: 0.25
+  persistent_memory_temperature: 0.1
+  persistent_memory_max_age: 32
+  use_relation_tokens: true
+  relation_topk: 3
+  relation_gate_floor: 0.05

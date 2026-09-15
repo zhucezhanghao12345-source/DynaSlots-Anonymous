@@ -1,0 +1,48 @@
+defaults:
+  - base_pretrain
+  - _self_
+
+name: train_dynaslots
+
+# Use the paper's effective pretraining batch size. The actual repository uses
+# raw-point attention rather than grouped tokens, so this value was verified
+# against a 24 GB RTX 4090 before the full run.
+dataloader:
+  batch_size: 32
+  num_workers: 8
+
+val_dataloader:
+  batch_size: 32
+  num_workers: 8
+
+optimizer:
+  lr: 1.0e-4
+  weight_decay: 0.05
+
+training:
+  num_epochs: 300
+
+policy:
+  pointnet_type: pointtransformer
+  use_dynaslots: true
+  num_slots: 6
+  slot_iterations: 3
+  frame_stride: 4
+  slot_graph_depth: 3
+  lambda_ifdm: 1.0
+  lambda_reverse: 1.0
+  lambda_interaction: 0.1
+  lambda_slot_entropy: 0.1
+  # Point-wise sharpness alone causes all points to select one slot.  This
+  # batch-level load term revives unused slots without enforcing per-scene
+  # uniformity (K remains an upper bound on active objects).
+  lambda_slot_balance: 0.2
+  slot_balance_warmup_epochs: 30
+  contact_radius_ratio: 0.2
+  motion_threshold: 0.02
+
+  # Slot-level VICReg uses milder weights than the scene-level defaults,
+  # matching the relative scale of the denoising objective.
+  vicreg_inv_weight: 1.0
+  vicreg_var_weight: 1.0
+  vicreg_cov_weight: 0.04

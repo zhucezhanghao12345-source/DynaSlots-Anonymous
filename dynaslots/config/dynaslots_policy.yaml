@@ -1,0 +1,26 @@
+defaults:
+  - base_policy
+  - _self_
+
+name: train_dynaslots_policy
+
+policy:
+  pointnet_type: pointtransformer
+  use_dynaslots: true
+  num_slots: 6
+  slot_iterations: 3
+
+# Use epochs 0-100, AdamW beta=(0.9, 0.999), batch size 128, and 50 rollouts
+# every 10 epochs.
+# The paper body says 25 rollouts, but its appendix and release script use 50.
+optimizer:
+  betas: [0.9, 0.999]
+
+training:
+  # train.py uses a zero-based inclusive evaluation schedule, so 101 loop
+  # iterations are required to evaluate the 100-epoch checkpoint.
+  num_epochs: 101
+
+task:
+  env_runner:
+    eval_episodes: 50

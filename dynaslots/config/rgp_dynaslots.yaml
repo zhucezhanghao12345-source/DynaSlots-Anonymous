@@ -1,0 +1,16 @@
+defaults:
+  - dynaslots
+  - _self_
+
+name: train_rgp_dynaslots
+
+training:
+  max_grad_norm: 1.0
+
+policy:
+  relation_gating: true
+  relation_topk: 3
+  relation_gate_floor: 0.05
+  relation_gate_temperature: 1.0
+  relation_gate_warmup_epochs: 30
+  lambda_relation_consistency: 0.05
