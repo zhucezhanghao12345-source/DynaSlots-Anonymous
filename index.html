@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DynaSlots — Slot-Centric 3D Dynamics Pretraining for Robot Manipulation</title>
+<meta name="description" content="DynaSlots decomposes point clouds into temporally consistent slots and models dynamics per slot, learning per-slot latent actions and cross-slot interactions without action, segmentation, or reconstruction labels.">
+<meta property="og:title" content="DynaSlots">
+<meta property="og:description" content="Slot-centric 3D dynamics pretraining for robot manipulation.">
+<meta property="og:image" content="fig1.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129302;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1319; --muted:#5b6572; --line:#e6e9ee;
+    --accent:#2f6bff; --accent-dark:#1f4fd8;
+    --bg:#fff; --soft:#f6f8fb; --radius:14px; --maxw:1020px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .container{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .accentbar{height:4px;background:linear-gradient(90deg,#2f6bff,#7aa2ff 60%,#c7d6ff)}
+
+  /* nav */
+  nav.topnav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
+    backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line)}
+  nav.topnav .inner{max-width:var(--maxw);margin:0 auto;padding:11px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  nav.topnav .brand{font-weight:800;font-family:"Newsreader",Georgia,serif;font-size:1.05rem;margin-right:10px}
+  nav.topnav a.lnk{font-size:.9rem;color:var(--muted);padding:6px 11px;border-radius:999px}
+  nav.topnav a.lnk:hover{background:var(--soft);color:var(--ink);text-decoration:none}
+  nav.topnav a.lnk.cta{margin-left:auto;color:#fff;background:var(--ink)}
+  nav.topnav a.lnk.cta:hover{background:#000}
+
+  /* hero */
+  header.hero{padding:56px 0 26px;text-align:center}
+  .eyebrow{display:inline-block;font-size:.78rem;font-weight:600;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--accent-dark);background:#eef3ff;border:1px solid #dbe5ff;
+    border-radius:999px;padding:5px 14px;margin-bottom:22px}
+  h1.title{font-family:"Newsreader",Georgia,serif;font-weight:600;
+    font-size:clamp(2.5rem,6vw,4rem);line-height:1.03;letter-spacing:-.01em;margin:0 0 14px}
+  .tagline{font-size:clamp(1.05rem,2.3vw,1.4rem);color:var(--muted);max-width:820px;margin:0 auto 24px}
+  .byline{color:var(--muted);font-size:.95rem;margin:0 auto 26px;max-width:700px}
+  .byline .anon{color:var(--ink);font-weight:600}
+  .buttons{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:6px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:999px;
+    font-weight:600;font-size:.95rem;border:1px solid var(--line);background:#fff;color:var(--ink);
+    transition:.18s ease;line-height:1}
+  .btn:hover{text-decoration:none;transform:translateY(-1px);box-shadow:0 6px 18px rgba(15,19,25,.09)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:#000}
+  .btn svg{width:17px;height:17px;flex:none}
+
+  /* sections */
+  section{padding:40px 0;scroll-margin-top:64px}
+  section + section{border-top:1px solid var(--line)}
+  h2{font-family:"Newsreader",Georgia,serif;font-weight:600;
+    font-size:clamp(1.5rem,3.2vw,2.05rem);margin:0 0 6px;letter-spacing:-.01em}
+  h3{font-size:1.06rem;font-weight:700;margin:0 0 6px}
+  .sec-sub{color:var(--muted);margin:0 0 22px;font-size:.97rem}
+  p{margin:0 0 16px}
+  .lead{font-size:1.06rem}
+
+  /* figure */
+  figure{margin:6px 0 0}
+  figure img{width:100%;display:block;border-radius:var(--radius);border:1px solid var(--line);background:#fff}
+  figcaption{color:var(--muted);font-size:.9rem;margin-top:12px;text-align:left}
+  figcaption b{color:var(--ink)}
+
+  /* cards */
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:8px}
+  .card{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card p{margin:0;font-size:.94rem;color:var(--muted)}
+  .card .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:8px;background:#e5edff;color:var(--accent-dark);font-size:.82rem;font-weight:700;margin-bottom:10px}
+
+  /* stats */
+  .stats{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:6px 0 4px}
+  .stat{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  .stat .big{font-family:"Newsreader",Georgia,serif;font-size:2.2rem;font-weight:600;line-height:1;letter-spacing:-.01em}
+  .stat .lbl{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .stat .delta{color:#0a7d4b;font-weight:600;font-size:.85rem}
+
+  /* tables */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);margin:6px 0 8px}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{background:var(--soft);font-weight:600;font-size:.8rem;letter-spacing:.03em;color:var(--muted);text-transform:uppercase}
+  tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:center}
+  tr.best td{background:#f1f6ff;font-weight:600}
+  tr.group td{background:#fbfcfe;color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+  code.inline{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.88em}
+
+  /* two-col */
+  .two{display:grid;gap:26px;grid-template-columns:1fr 1fr;align-items:start}
+  @media(max-width:780px){.two{grid-template-columns:1fr}}
+
+  /* code */
+  pre{background:#0d1117;color:#e6edf3;border-radius:var(--radius);padding:18px 20px;overflow-x:auto;
+    font-size:.87rem;line-height:1.65;margin:0 0 18px;
+    font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre .c{color:#8b949e}
+  pre .k{color:#79c0ff}
+
+  .note{font-size:.86rem;color:var(--muted);background:var(--soft);border:1px solid var(--line);
+    border-radius:10px;padding:12px 16px;margin-top:8px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 46px;color:var(--muted);font-size:.88rem;text-align:center}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="accentbar"></div>
+
+<nav class="topnav">
+  <div class="inner">
+    <span class="brand">DynaSlots</span>
+    <a class="lnk" href="#abstract">Abstract</a>
+    <a class="lnk" href="#method">Method</a>
+    <a class="lnk" href="#results">Simulation</a>
+    <a class="lnk" href="#realworld">Real World</a>
+    <a class="lnk" href="#quickstart">Code</a>
+    <a class="lnk cta" href="https://github.com/zhucezhanghao12345-source/DynaSlots-Anonymous">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero container">
+  <span class="eyebrow">Anonymous Submission · Under Review</span>
+  <h1 class="title">DynaSlots</h1>
+  <p class="tagline">Slot-Centric 3D Dynamics Pretraining for Robot Manipulation</p>
+  <p class="byline"><span class="anon">Anonymous Authors</span><br>
+    Author information is withheld for double-blind review.</p>
+
+  <div class="buttons">
+    <a class="btn primary" href="https://github.com/zhucezhanghao12345-source/DynaSlots-Anonymous">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      Code
+    </a>
+    <a class="btn" href="INSTALL.md">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h6"/></svg>
+      Installation
+    </a>
+    <a class="btn" href="#quickstart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      Quick Start
+    </a>
+  </div>
+</header>
+
+<div class="container">
+  <figure>
+    <img src="fig1.png" alt="Scene-level versus slot-centric 3D dynamics pretraining">
+    <figcaption><b>Scene-level versus slot-centric 3D dynamics pretraining.</b>
+      (a) Scene-level modeling compresses the motion of everything into a single global latent action, causing semantic aliasing, implicit interaction dependencies, and distractor sensitivity.
+      (b) DynaSlots instead uses temporally aligned soft slots, assigns one latent action to each slot, and models pairwise proximity-and-motion relations across slots.</figcaption>
+  </figure>
+</div>
+
+<main class="container">
+
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p class="lead">
+      Robot manipulation involves <em>localized</em> changes: picking up a cup moves the cup while leaving
+      the surrounding scene largely unchanged. Yet existing 3D visual pretraining methods, including recent
+      dynamics-aware variants, model state transitions at the <em>scene</em> level, compressing the motion of
+      everything in a scene into a single global latent action. This conflates semantically distinct
+      transitions, obscures dependencies between changing regions, and leaves the representation vulnerable
+      to task-irrelevant content.
+    </p>
+    <p>
+      We introduce <b>DynaSlots</b>, an action-free, label-free pretraining framework that decomposes each
+      point-cloud frame into a small set of <em>temporally consistent slots</em> and models dynamics at this
+      per-slot level rather than the scene level. A temporal slot propagation module promotes consistent slot
+      assignments across frames; an inverse dynamics model extracts one latent action per slot from feature
+      differences; and a diffusion-based forward dynamics model, paired with a self-supervised interaction
+      head, predicts each slot's future state while learning pairwise proximity-and-motion relations.
+    </p>
+    <p>
+      Experiments on <b>Meta-World</b>, <b>Adroit</b>, and a real <b>RealMan RM65-B</b> robot show that
+      DynaSlots significantly outperforms prior scene-level baselines: it attains higher success rates in
+      simulation and exhibits strong robustness to scene clutter and unseen objects in real-world
+      manipulation.
+    </p>
+    <div class="note">This page accompanies an anonymous submission. Author names, affiliations, and links
+      to non-anonymous material are intentionally omitted for double-blind review.</div>
+  </section>
+
+  <section id="highlights">
+    <h2>Key Ideas</h2>
+    <p class="sec-sub">The latent action of a transition should be defined <em>per slot</em>, not per scene.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="num">1</div>
+        <h3>Slot-level dynamics pretraining</h3>
+        <p>The first slot-based dynamics-aware 3D visual pretraining framework — no action labels,
+           no segmentation ground truth, no reconstruction supervision.</p>
+      </div>
+      <div class="card">
+        <div class="num">2</div>
+        <h3>Temporal slot propagation</h3>
+        <p>Previous-frame slots query the current frame to keep cross-frame slot correspondence,
+           so feature differences reflect real temporal change instead of assignment shuffling.</p>
+      </div>
+      <div class="card">
+        <div class="num">3</div>
+        <h3>Cross-slot dynamics + interactions</h3>
+        <p>A cross-slot diffusion forward dynamics model with a self-supervised interaction head
+           captures how slots move and co-move relative to one another.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>Method</h2>
+    <p class="sec-sub">Point cloud → tokens → temporally consistent slots → per-slot latent actions → cross-slot diffusion dynamics.</p>
+
+    <figure>
+      <img src="fig2.png" alt="DynaSlots framework">
+      <figcaption><b>DynaSlots framework.</b> (a) Three point-cloud frames are encoded by a shared Point
+        Transformer and propagated by a temporal slot binder into <em>K</em>=6 aligned soft slots. An inverse
+        dynamics model (IDM) extracts per-slot latent actions from feature differences; a cross-slot encoder
+        conditions a diffusion forward dynamics model (FDM) on current slot features, centroids, and actions,
+        with an EMA target branch and an auxiliary interaction head.
+        (b) Previous slots query current point tokens through competitive assignment, weighted aggregation,
+        and residual refinement. (c) Two observed point clouds and the robot state produce slot condition
+        tokens for the diffusion policy.</figcaption>
+    </figure>
+  </section>
+
+  <section id="results">
+    <h2>Simulation Results</h2>
+    <p class="sec-sub">Meta-World &amp; Adroit, following the evaluation protocol and baseline suite of prior scene-level dynamics-aware work. Higher is better; parentheses give each method's gap to the best.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="big">80.8%</div>
+        <div class="lbl">Meta-World mean success rate</div>
+        <div class="delta">+4.8 over the strongest scene-level baseline</div>
+      </div>
+      <div class="stat">
+        <div class="big">88.0%</div>
+        <div class="lbl">Adroit mean success rate</div>
+        <div class="delta">+5.0 over the strongest scene-level baseline</div>
+      </div>
+      <div class="stat">
+        <div class="big">+11.1 / +13.0</div>
+        <div class="lbl">Gain over DP3 (Meta-World / Adroit)</div>
+        <div class="delta">policy-only diffusion baseline</div>
+      </div>
+    </div>
+
+    <div class="tablewrap" style="margin-top:18px">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th><th>Method</th>
+            <th class="num">Easy</th><th class="num">Med.</th><th class="num">Hard</th><th class="num">V.Hard</th>
+            <th class="num">MW Mean</th>
+            <th class="num">Door</th><th class="num">Pen</th><th class="num">Adroit Mean</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td rowspan="3">Large-scale</td><td>CLIP</td>
+            <td class="num">29.3</td><td class="num">14.0</td><td class="num">5.0</td><td class="num">55.3</td><td class="num">24.9</td>
+            <td class="num">61.0</td><td class="num">84.0</td><td class="num">72.5</td></tr>
+          <tr><td>DINOv2</td>
+            <td class="num">34.0</td><td class="num">14.0</td><td class="num">5.0</td><td class="num">55.3</td><td class="num">25.9</td>
+            <td class="num">76.0</td><td class="num">84.0</td><td class="num">80.0</td></tr>
+          <tr><td>PointNet</td>
+            <td class="num">71.3</td><td class="num">49.7</td><td class="num">23.0</td><td class="num">55.3</td><td class="num">51.7</td>
+            <td class="num">80.0</td><td class="num">72.0</td><td class="num">76.0</td></tr>
+          <tr><td rowspan="2">Static 3D</td><td>Point-MAE</td>
+            <td class="num">77.3</td><td class="num">61.3</td><td class="num">42.0</td><td class="num">70.0</td><td class="num">63.9</td>
+            <td class="num">64.0</td><td class="num">76.0</td><td class="num">70.0</td></tr>
+          <tr><td>PointDif</td>
+            <td class="num">83.3</td><td class="num">58.0</td><td class="num">41.0</td><td class="num">58.7</td><td class="num">61.1</td>
+            <td class="num">76.0</td><td class="num">78.0</td><td class="num">77.0</td></tr>
+          <tr><td>Policy-only</td><td>DP3</td>
+            <td class="num">82.7</td><td class="num">65.0</td><td class="num">49.0</td><td class="num">80.0</td><td class="num">69.7</td>
+            <td class="num">70.0</td><td class="num">80.0</td><td class="num">75.0</td></tr>
+          <tr><td>Dyn., 2D</td><td>DynaMo</td>
+            <td class="num">42.0</td><td class="num">21.7</td><td class="num">14.0</td><td class="num">34.0</td><td class="num">27.6</td>
+            <td class="num">76.0</td><td class="num">68.0</td><td class="num">72.0</td></tr>
+          <tr><td rowspan="3">Dyn., 3D (scene)</td><td>DynaMo-3D</td>
+            <td class="num">84.7</td><td class="num">55.3</td><td class="num">41.0</td><td class="num">80.0</td><td class="num">64.9</td>
+            <td class="num">73.0</td><td class="num">76.0</td><td class="num">74.5</td></tr>
+          <tr><td>FVP</td>
+            <td class="num">80.0</td><td class="num">44.3</td><td class="num">34.0</td><td class="num">62.0</td><td class="num">54.3</td>
+            <td class="num">66.0</td><td class="num">76.0</td><td class="num">71.0</td></tr>
+          <tr><td>AFRO</td>
+            <td class="num">88.0</td><td class="num">69.7</td><td class="num">55.0</td><td class="num">90.7</td><td class="num">76.0</td>
+            <td class="num">82.0</td><td class="num">84.0</td><td class="num">83.0</td></tr>
+          <tr class="best"><td>Dyn., 3D (slot)</td><td><b>DynaSlots (ours)</b></td>
+            <td class="num"><b>92.3</b></td><td class="num"><b>74.7</b></td><td class="num"><b>60.0</b></td><td class="num"><b>95.3</b></td><td class="num"><b>80.8</b></td>
+            <td class="num"><b>87.0</b></td><td class="num"><b>89.0</b></td><td class="num"><b>88.0</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-sub">Mean success rate (%). Meta-World groups: Easy(3), Med.(6), Hard(2), V.Hard(3) tasks. DynaSlots leads every group and both benchmarks.</p>
+  </section>
+
+  <section id="realworld">
+    <h2>Real-World Experiments</h2>
+    <p class="sec-sub">A RealMan RM65-B arm with a parallel-jaw gripper and a fixed eye-to-hand Intel RealSense
+      RGB-D camera. 100 expert trajectories per task; five initial layouts × ten trials each.</p>
+
+    <figure>
+      <img src="fig4.png" alt="Four real-world manipulation tasks">
+      <figcaption><b>Four real-world manipulation tasks.</b> (a) putting the milk on the white plate;
+        (b) putting the ball on the white plate; (c) placing the ball from the white plate into the bowl;
+        (d) putting the chocolate on the plate — covering pick-and-place, destination selection, and
+        placement into a container.</figcaption>
+    </figure>
+
+    <div class="stats" style="margin-top:22px">
+      <div class="stat">
+        <div class="big">79.0%</div>
+        <div class="lbl">Four-task suite avg. (target-task data)</div>
+        <div class="delta">+8.5 over the strongest scene-level baseline</div>
+      </div>
+      <div class="stat">
+        <div class="big">73.0%</div>
+        <div class="lbl">Suite avg. (RH20T pretrain + fine-tune)</div>
+        <div class="delta">+10.0 over the strongest baseline</div>
+      </div>
+      <div class="stat">
+        <div class="big">Best in every column</div>
+        <div class="lbl">All four tasks, both pretraining sources</div>
+        <div class="delta">gains span different manipulation patterns</div>
+      </div>
+    </div>
+
+    <div class="tablewrap" style="margin-top:18px">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Method</th><th class="num" colspan="2">Suite Avg. (%)</th></tr>
+          <tr><th class="num">Target-task data</th><th class="num">RH20T pretrain + FT</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DP3</td><td class="num">57.5</td><td class="num">51.0</td></tr>
+          <tr><td>PointDif</td><td class="num">55.0</td><td class="num">48.5</td></tr>
+          <tr><td>FVP</td><td class="num">57.0</td><td class="num">51.5</td></tr>
+          <tr><td>DynaMo-3D</td><td class="num">63.5</td><td class="num">57.0</td></tr>
+          <tr><td>AFRO</td><td class="num">70.5</td><td class="num">63.0</td></tr>
+          <tr class="best"><td><b>DynaSlots (ours)</b></td><td class="num"><b>79.0</b></td><td class="num"><b>73.0</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:26px">Robustness: clutter &amp; unseen objects</h3>
+    <p class="sec-sub">Both on task (c), five layouts × ten trials. “Drop” is the absolute change vs. the matched original scene.</p>
+
+    <div class="two">
+      <div>
+        <figure><img src="fig5.png" alt="Robustness to scene clutter"></figure>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Method</th><th class="num">No clutter</th><th class="num">Cluttered</th><th class="num">Drop</th></tr></thead>
+            <tbody>
+              <tr><td>DP3</td><td class="num">54.0</td><td class="num">28.0</td><td class="num">26.0</td></tr>
+              <tr><td>PointDif</td><td class="num">52.0</td><td class="num">26.0</td><td class="num">26.0</td></tr>
+              <tr><td>FVP</td><td class="num">54.0</td><td class="num">30.0</td><td class="num">24.0</td></tr>
+              <tr><td>DynaMo-3D</td><td class="num">60.0</td><td class="num">36.0</td><td class="num">24.0</td></tr>
+              <tr><td>AFRO</td><td class="num">68.0</td><td class="num">40.0</td><td class="num">28.0</td></tr>
+              <tr class="best"><td><b>DynaSlots (ours)</b></td><td class="num"><b>78.0</b></td><td class="num"><b>70.0</b></td><td class="num"><b>8.0</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sec-sub" style="margin-top:0">DynaSlots retains 89.7% of its no-clutter score under clutter;
+          the strongest scene-level baseline retains only 58.8%.</p>
+      </div>
+      <div>
+        <figure><img src="fig6.png" alt="Robustness to unseen objects"></figure>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Method</th><th class="num">Original</th><th class="num">Unseen</th><th class="num">Drop</th></tr></thead>
+            <tbody>
+              <tr><td>DP3</td><td class="num">54.0</td><td class="num">38.0</td><td class="num">16.0</td></tr>
+              <tr><td>PointDif</td><td class="num">52.0</td><td class="num">36.0</td><td class="num">16.0</td></tr>
+              <tr><td>FVP</td><td class="num">54.0</td><td class="num">40.0</td><td class="num">14.0</td></tr>
+              <tr><td>DynaMo-3D</td><td class="num">60.0</td><td class="num">48.0</td><td class="num">12.0</td></tr>
+              <tr><td>AFRO</td><td class="num">68.0</td><td class="num">54.0</td><td class="num">14.0</td></tr>
+              <tr class="best"><td><b>DynaSlots (ours)</b></td><td class="num"><b>78.0</b></td><td class="num"><b>72.0</b></td><td class="num"><b>6.0</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sec-sub" style="margin-top:0">With scenes containing unseen objects, DynaSlots loses only
+          6.0 points and beats the strongest baseline by 18.0.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="quickstart">
+    <h2>Quick Start</h2>
+    <p class="sec-sub">Linux · Python 3.8 · MuJoCo 2.1 · CUDA. Full setup in <a href="INSTALL.md">INSTALL.md</a>.</p>
+<pre><span class="c"># 1. environment</span>
+<span class="k">conda</span> create -n dynaslots python=3.8 -y
+<span class="k">conda</span> activate dynaslots
+<span class="k">pip</span> install -e .
+
+<span class="c"># 2. demonstrations</span>
+<span class="k">bash</span> scripts/gen_demonstration_adroit.sh pen
+<span class="k">bash</span> scripts/gen_demonstration_metaworld.sh bin-picking
+
+<span class="c"># 3. pretrain representation</span>
+<span class="k">bash</span> scripts/pretrain_dynaslots.sh adroit_pen run1 0 0
+
+<span class="c"># 4. train &amp; evaluate the diffusion policy</span>
+<span class="k">bash</span> scripts/train_dynaslots_policy.sh adroit_pen run1 0 0
+<span class="k">bash</span> scripts/eval_dynaslots_policy.sh  adroit_pen run1 0 0</pre>
+    <p><b>Arguments</b> are <code class="inline">task_name</code>, <code class="inline">run_name</code>,
+      <code class="inline">seed</code>, and comma-separated <code class="inline">GPU IDs</code>.
+      Set <code class="inline">RESUME=true</code> to resume representation pretraining.</p>
+
+    <h3 style="margin-top:22px">Repository Layout</h3>
+    <div class="tablewrap">
+      <table>
+        <tbody>
+          <tr><td><code class="inline">dynaslots/</code></td><td>Core models, policies, environments, datasets, and configs</td></tr>
+          <tr><td><code class="inline">scripts/</code></td><td>Demonstration, training, and evaluation entry points</td></tr>
+          <tr><td><code class="inline">tests/</code></td><td>Unit tests for slot binding and policy conditioning</td></tr>
+          <tr><td><code class="inline">third_party/</code></td><td>Required simulation dependencies without generated artifacts</td></tr>
+          <tr><td><code class="inline">pretrain.py</code>, <code class="inline">train.py</code>, <code class="inline">eval.py</code></td><td>Top-level entry points</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p style="margin-bottom:6px">
+      <a href="https://github.com/zhucezhanghao12345-source/DynaSlots-Anonymous">Code</a> ·
+      <a href="INSTALL.md">Installation</a> ·
+      <a href="README.md">README</a>
+    </p>
+    <p style="margin:0">DynaSlots · Anonymous submission · Bundled third-party components retain their original licenses.</p>
+  </div>
+</footer>
+
+</body>
+</html>
