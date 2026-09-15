@@ -86,6 +86,7 @@ third_party/**/tests/
 third_party/**/examples/
 third_party/**/__MACOSX/
 third_party/VRL3/ckpts/
+third_party/VRL3/ckpts
 third_party/VRL3/vrl3_ckpts/
 third_party/mujoco-py-2.1.2.14/mujoco_py/cymj.c
 third_party/mujoco-py-2.1.2.14/mujoco_py/generated/cymj*
