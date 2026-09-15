@@ -6,10 +6,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
 </div>
 
-**[Qiwei Liang](https://kolakivy.github.io/)**, Boyang Cai, Minghao Lai,
-Sitong Zhuang, [Tao Lin](https://lintao.online/), Yan Qin, Yixuan Ye,
-Jiaming Liang, and [Renjing Xu](https://openreview.net/profile?id=~Renjing_Xu1)
-
 <p align="center">
   <img src="teaser.png" width="100%" alt="DynaSlots overview">
 </p>
@@ -90,19 +86,6 @@ third_party/   Required simulation dependencies without generated artifacts
 pretrain.py    Representation pretraining entry point
 train.py       Diffusion-policy training entry point
 eval.py        Policy evaluation entry point
-```
-
-## Citation
-
-If you find this work useful, please cite:
-
-```bibtex
-@article{liang2025bootstrap,
-  title   = {Bootstrap Dynamic-Aware 3D Visual Representation for Scalable Robot Learning},
-  author  = {Liang, Qiwei and Cai, Boyang and Lai, Minghao and Zhuang, Sitong and Lin, Tao and Qin, Yan and Ye, Yixuan and Liang, Jiaming and Xu, Renjing},
-  journal = {arXiv preprint arXiv:2512.00074},
-  year    = {2025}
-}
 ```
 
 ## License
