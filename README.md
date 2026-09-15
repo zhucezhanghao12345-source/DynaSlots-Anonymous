@@ -1,6 +1,5 @@
 <div align="center">
-  <h1>DynaSlots</h1>
-  <p><strong>Dynamic object-centric 3D representations for scalable robot learning</strong></p>
+  <h1>DynaSlots: Slot-Centric 3D Dynamics Pretraining for Robot Manipulation</h1>
 </div>
 
 <p align="center">
